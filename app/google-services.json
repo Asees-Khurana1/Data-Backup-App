@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "751613519480",
+    "project_id": "databackupapp-8b3d8",
+    "storage_bucket": "databackupapp-8b3d8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:751613519480:android:085f5fdddcddb3cd17af8d",
+        "android_client_info": {
+          "package_name": "com.asees.databackupapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDScNJ9mPrFdegaX0I5WUH-YjRhfXw6szM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
