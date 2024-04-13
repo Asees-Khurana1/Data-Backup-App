@@ -5,11 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
@@ -25,13 +28,21 @@ class MainActivity : ComponentActivity() {
     fun MainScreen() {
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text("Data Backup App") })
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Data Backup App",
+                            color = Color.White
+                        )
+                    },
+                    backgroundColor = MaterialTheme.colors.primary
+                )
             }
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .background(color = Color.LightGray), // Changed background color
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -39,20 +50,35 @@ class MainActivity : ComponentActivity() {
                     onClick = {
                         startActivity(Intent(this@MainActivity, BackupActivity::class.java))
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 32.dp), // Adjusted padding
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                    elevation = ButtonDefaults.elevation(12.dp), // Added elevation
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text("Go to Backup")
+                    Text(
+                        text = "Go to Backup",
+                        color = Color.White
+                    )
                 }
-                Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = {
                         startActivity(Intent(this@MainActivity, RestoreActivity::class.java))
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 32.dp), // Adjusted padding
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
+                    elevation = ButtonDefaults.elevation(12.dp), // Added elevation
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text("Go to Restore")
+                    Text(
+                        text = "Go to Restore",
+                        color = Color.White
+                    )
                 }
             }
         }
