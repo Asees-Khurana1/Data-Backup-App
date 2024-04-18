@@ -1,35 +1,32 @@
 package com.asees.databackupapp
 
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
+import android.net.Uri
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 
-class FirebaseDBHelper {
-    private var database: DatabaseReference = FirebaseDatabase.getInstance().getReference("files")
+object FirebaseDBHelper {
+
+    private val storageRef = FirebaseStorage.getInstance().getReference("file_data")
+    private val dbRef = FirebaseDatabase.getInstance().getReference("files")
 
     fun backupFile(file: FileEntity) {
-        file.id = database.push().key // Generate unique key for each file
-        file.isBackedUp = true
-        file.id?.let {
-            database.child(it).setValue(file)
+        val fileRef = storageRef.child(file.fileName)
+        val fileUri = Uri.fromFile(java.io.File(file.filePath))
+        fileRef.putFile(fileUri).addOnSuccessListener {
+            file.isBackedUp = true
+            dbRef.child(file.id).setValue(file)
+        }.addOnFailureListener {
+            // Handle any errors in backup
         }
     }
 
-    fun getFile(fileId: String, callback: (FileEntity?) -> Unit) {
-        database.child(fileId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val file = snapshot.getValue(FileEntity::class.java)
-                callback(file)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                println("Failed to read value: ${error.toException()}")
-                callback(null)
-            }
-        })
+    fun prefetchFile(file: FileEntity) {
+        val fileRef = storageRef.child(file.fileName)
+        fileRef.getFile(java.io.File(file.filePath)).addOnSuccessListener {
+            file.isBackedUp = false
+            dbRef.child(file.id).setValue(file)
+        }.addOnFailureListener {
+            // Handle any errors in restoration
+        }
     }
-
-    // Implement more functions as needed
 }

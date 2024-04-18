@@ -1,19 +1,23 @@
 package com.asees.databackupapp
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 
 class RestoreActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -21,51 +25,36 @@ class RestoreActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun RestoreScreen() {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Restore Files",
-                            color = Color.White
-                        )
-                    },
-                    backgroundColor = MaterialTheme.colors.primary
-                )
+                TopAppBar(title = { Text("Restore Files") })
             }
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = Color.White),
+                    .padding(32.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Press the button to restore files.",
-                    style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.onSurface,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
                 Button(
                     onClick = {
-                        // Implementation for the actual restore logic
+                        if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
+                            val restoreRequest = OneTimeWorkRequestBuilder<RestoreWorker>().build()
+                            WorkManager.getInstance(applicationContext).enqueue(restoreRequest)
+                            Toast.makeText(applicationContext, "Restore started", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(applicationContext, "Insufficient battery or network not available", Toast.LENGTH_LONG).show()
+                        }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                    elevation = ButtonDefaults.elevation(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text(
-                        text = "Restore Files",
-                        color = Color.White
-                    )
+                    Text("Restore Files")
                 }
             }
         }

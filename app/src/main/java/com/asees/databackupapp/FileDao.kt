@@ -9,17 +9,19 @@ import androidx.room.Update
 
 @Dao
 interface FileDao {
+    @Query("SELECT * FROM files WHERE lastAccessed <= :threshold AND isBackedUp = 0")
+    fun getFilesForBackup(threshold: Long): List<FileEntity>
 
-    @Query("SELECT * FROM FileEntity WHERE lastAccessed <= :threshold AND is_backed_up = 0")
-    fun getFilesNotAccessedInLastMonth(threshold: Long): List<FileEntity>
+    @Query("SELECT * FROM files WHERE frequentlyUsed = 1 AND isBackedUp = 1")
+    fun getFilesForRestore(): List<FileEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertFile(file: FileEntity)
 
     @Update
-    fun update(file: FileEntity)
-
-    // You might also need methods to insert and delete records
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(file: FileEntity)
+    fun updateFile(file: FileEntity)
 
     @Delete
-    fun delete(file: FileEntity)
+    fun deleteFile(file: FileEntity)
 }
+

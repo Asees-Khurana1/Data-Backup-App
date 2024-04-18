@@ -1,19 +1,23 @@
 package com.asees.databackupapp
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 
 class BackupActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -21,46 +25,36 @@ class BackupActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun BackupScreen() {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Backup Files") },
-                    backgroundColor = MaterialTheme.colors.primary
-                )
+                TopAppBar(title = { Text("Backup Files") })
             }
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(32.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Press the button to start the backup process.",
-                    style = MaterialTheme.typography.body1,
-                    color = Color.Black
-                )
-                Spacer(Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        // Implementation for the actual backup logic
+                        if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
+                            val backupRequest = OneTimeWorkRequestBuilder<BackupWorker>().build()
+                            WorkManager.getInstance(applicationContext).enqueue(backupRequest)
+                            Toast.makeText(applicationContext, "Backup started", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(applicationContext, "Insufficient battery or network not available", Toast.LENGTH_LONG).show()
+                        }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp), // Adjusted button height
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                    modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text(
-                        text = "Start Backup",
-                        style = MaterialTheme.typography.button,
-                        color = Color.White
-                    )
+                    Text("Start Backup")
                 }
             }
         }
