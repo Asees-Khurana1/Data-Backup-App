@@ -11,24 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.work.*
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: FileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
-            .get(FileViewModel::class.java)
-
-        scheduleBackupWorker()  // Schedule backup worker on app start
-        scheduleRestoreWorker() // Schedule restore worker on app start
-
         setContent {
             MainScreen()
         }
+        scheduleBackupWorker()
+        scheduleRestoreWorker()
     }
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -47,7 +41,7 @@ class MainActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = { startActivity(Intent(this@MainActivity, BackupActivity::class.java)) },
+                    onClick = { navigateToBackupActivity() },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
@@ -55,7 +49,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { startActivity(Intent(this@MainActivity, RestoreActivity::class.java)) },
+                    onClick = { navigateToRestoreActivity() },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
@@ -63,6 +57,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun navigateToBackupActivity() {
+        startActivity(Intent(this, BackupActivity::class.java))
+    }
+
+    private fun navigateToRestoreActivity() {
+        startActivity(Intent(this, RestoreActivity::class.java))
     }
 
     private fun scheduleBackupWorker() {
