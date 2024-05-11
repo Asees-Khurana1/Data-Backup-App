@@ -91,6 +91,7 @@ dependencies {
     // Lifecycle and ViewModel
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation ("androidx.compose.material3:material3:1.0.0-alpha02")
 
 
 }

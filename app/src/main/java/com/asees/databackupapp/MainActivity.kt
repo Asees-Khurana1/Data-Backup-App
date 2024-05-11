@@ -12,11 +12,13 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.work.*
+import com.google.firebase.annotations.concurrent.Background
 import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
 
@@ -45,9 +47,22 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun MainScreen() {
+        val backupButtonColor = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Green, // Set the background color of the button
+            contentColor = Color.White // Set the content color of the button (text color)
+        )
+        val RestoreButtonColor = ButtonDefaults.buttonColors(
+            backgroundColor = Color.LightGray, // Set the background color of the button
+            contentColor = Color.White // Set the content color of the button (text color)
+        )
+
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text("Data Backup App") })
+                TopAppBar(
+                    title = { Text("Data Backup App") },
+                    backgroundColor = Color.Gray // Set the background color of the TopAppBar
+                )
+//                TopAppBar(title = { Text("Data Backup App") })
             }
         ) {
             Box(
@@ -77,6 +92,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                         },
+                        colors = backupButtonColor,
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp)
                     ) {
@@ -92,6 +108,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                         },
+                        colors = RestoreButtonColor,
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp)
                     ) {
