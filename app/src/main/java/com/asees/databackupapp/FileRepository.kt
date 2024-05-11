@@ -4,7 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class FileRepository(private val context: Context) {
+class FileRepository(context: Context) {
     private val database = AppDatabase.getDatabase(context)
     private val fileDao = database.fileDao()
 

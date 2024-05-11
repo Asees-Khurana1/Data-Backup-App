@@ -1,9 +1,9 @@
 package com.asees.databackupapp
 
 import android.content.Context
-import android.os.BatteryManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.BatteryManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 
@@ -15,7 +15,7 @@ object DeviceStatusUtils {
         val batteryPct = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
         val isCharging = batteryManager.isCharging
 
-        return batteryPct > 30 || isCharging  // Consider enough if battery is above 30% or if charging
+        return batteryPct > 30 || isCharging
     }
 
     @RequiresApi(Build.VERSION_CODES.M)

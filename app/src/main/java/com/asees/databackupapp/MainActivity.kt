@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
             backgroundColor = Color.Green, // Set the background color of the button
             contentColor = Color.White // Set the content color of the button (text color)
         )
-        val RestoreButtonColor = ButtonDefaults.buttonColors(
+        val restoreButtonColor = ButtonDefaults.buttonColors(
             backgroundColor = Color.LightGray, // Set the background color of the button
             contentColor = Color.White // Set the content color of the button (text color)
         )
@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navigateToRestoreActivity() },
-                    colors = RestoreButtonColor,
+                    colors = restoreButtonColor,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {

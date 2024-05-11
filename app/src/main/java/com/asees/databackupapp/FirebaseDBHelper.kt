@@ -11,13 +11,18 @@ object FirebaseDBHelper {
 
     fun backupFile(
         file: FileEntity,
+        onProgress: (Double) -> Unit,
         onSuccess: () -> Unit,
         onError: (Exception) -> Unit
     ) {
         val fileRef = storageRef.child(file.fileName)
         val fileUri = Uri.fromFile(File(file.filePath))
 
-        fileRef.putFile(fileUri).addOnSuccessListener {
+        val uploadTask = fileRef.putFile(fileUri)
+        uploadTask.addOnProgressListener { taskSnapshot ->
+            val progress = (100.0 * taskSnapshot.bytesTransferred) / taskSnapshot.totalByteCount
+            onProgress(progress)
+        }.addOnSuccessListener {
             file.isBackedUp = true
             dbRef.child(file.id).setValue(file).addOnSuccessListener {
                 onSuccess()
@@ -31,11 +36,18 @@ object FirebaseDBHelper {
 
     fun prefetchFile(
         file: FileEntity,
+        onProgress: (Double) -> Unit,
         onSuccess: () -> Unit,
         onError: (Exception) -> Unit
     ) {
+        val fileRef = storageRef.child(file.fileName)
         val localFile = File(file.filePath)
-        storageRef.child(file.fileName).getFile(localFile).addOnSuccessListener {
+
+        val downloadTask = fileRef.getFile(localFile)
+        downloadTask.addOnProgressListener { taskSnapshot ->
+            val progress = (100.0 * taskSnapshot.bytesTransferred) / taskSnapshot.totalByteCount
+            onProgress(progress)
+        }.addOnSuccessListener {
             file.isBackedUp = false
             dbRef.child(file.id).setValue(file).addOnSuccessListener {
                 onSuccess()

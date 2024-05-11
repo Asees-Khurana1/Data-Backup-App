@@ -16,19 +16,19 @@ class BackupWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val repository = FileRepository(applicationContext)
 
-        // Check battery and network availability before proceeding
         if (!DeviceStatusUtils.hasEnoughBattery(applicationContext) || !DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
             return@withContext Result.retry()
         }
 
-        // Process each file that needs to be backed up
-        val filesToBackup = repository.getFilesForBackup(System.currentTimeMillis() - THIRTY_DAYS)
-        filesToBackup.forEach { file ->
-            try {
+        try {
+            val filesToBackup = repository.getFilesForBackup(System.currentTimeMillis() - THIRTY_DAYS)
+            filesToBackup.forEach { file ->
                 FirebaseDBHelper.backupFile(
                     file,
+                    onProgress = { progress ->
+                        // Progress can be logged or shown in a notification
+                    },
                     onSuccess = {
-                        // Ensure we are in a coroutine scope when calling suspend functions
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
                                 repository.updateFile(file.apply { isBackedUp = true })
@@ -41,11 +41,12 @@ class BackupWorker(
                         println("Error backing up file: ${file.fileName}, ${exception.message}")
                     }
                 )
-            } catch (e: Exception) {
-                println("Backup process failed: ${e.localizedMessage}")
             }
+            Result.success()
+        } catch (e: Exception) {
+            println("Backup worker failed: ${e.localizedMessage}")
+            Result.failure()
         }
-        Result.success()
     }
 
     companion object {
