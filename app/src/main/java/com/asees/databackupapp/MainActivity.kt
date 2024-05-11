@@ -5,11 +5,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.work.*
 import java.util.concurrent.TimeUnit
@@ -28,11 +32,32 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun MainScreen() {
+        val backupButtonColor = ButtonDefaults.buttonColors(
+            backgroundColor = Color.Green, // Set the background color of the button
+            contentColor = Color.White // Set the content color of the button (text color)
+        )
+        val RestoreButtonColor = ButtonDefaults.buttonColors(
+            backgroundColor = Color.LightGray, // Set the background color of the button
+            contentColor = Color.White // Set the content color of the button (text color)
+        )
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text("Data Backup App") })
-            }
-        ) {
+                TopAppBar(
+                    title = { Text("Data Backup App") },
+                    backgroundColor = Color.Gray // Set the background color of the TopAppBar
+                )
+            })
+             {
+            Box(modifier = Modifier.fillMaxSize())
+            {
+                Image(
+                    painter = painterResource(id = R.drawable.cloud), // Replace "your_image" with the actual image resource name
+                    contentDescription = null, // Provide content description if necessary
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds // Scale the image to fill the bounds of the Box
+                )
+
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -42,6 +67,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(
                     onClick = { navigateToBackupActivity() },
+                    colors = backupButtonColor,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
@@ -50,11 +76,13 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navigateToRestoreActivity() },
+                    colors = RestoreButtonColor,
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     Text("Restore Files")
                 }
+            }
             }
         }
     }
