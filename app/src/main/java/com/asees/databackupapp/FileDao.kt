@@ -23,3 +23,4 @@ interface FileDao {
     @Query("UPDATE files SET lastAccessed = :lastAccessed WHERE id = :fileId")
     suspend fun updateFileAccess(fileId: String, lastAccessed: Long)
 }
+

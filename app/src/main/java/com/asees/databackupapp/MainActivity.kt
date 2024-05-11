@@ -81,8 +81,8 @@ class MainActivity : ComponentActivity() {
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     Text("Restore Files")
+                    }
                 }
-            }
             }
         }
     }

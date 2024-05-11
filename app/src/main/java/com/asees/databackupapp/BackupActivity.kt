@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 
 class BackupActivity : ComponentActivity() {
+    private val repository by lazy { FileRepository(applicationContext) }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +44,8 @@ class BackupActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-                            backupFile(FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt"))
+                            val file = FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt")
+                            backupFile(file)
                         } else {
                             println("Not enough battery or network is not available")
                         }
@@ -56,18 +59,15 @@ class BackupActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun backupFile(file: FileEntity) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 FirebaseDBHelper.backupFile(
                     file,
                     onSuccess = {
-                        println("Backup successful for file: ${file.fileName}")
-                        // Ensure you update the database in a coroutine scope
+                        // Ensure database operations are within a coroutine context
                         launch {
                             try {
-                                val repository = FileRepository(applicationContext)
                                 repository.updateFile(file.apply { isBackedUp = true })
                             } catch (e: Exception) {
                                 println("Error updating file status: ${e.localizedMessage}")

@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 
 class RestoreActivity : ComponentActivity() {
+    private val repository by lazy { FileRepository(applicationContext) }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +44,8 @@ class RestoreActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-                            restoreFile(FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt"))
+                            val file = FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt")
+                            restoreFile(file)
                         } else {
                             println("Not enough battery or network is not available")
                         }
@@ -56,18 +59,15 @@ class RestoreActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun restoreFile(file: FileEntity) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 FirebaseDBHelper.prefetchFile(
                     file,
                     onSuccess = {
-                        println("Restore successful for file: ${file.fileName}")
-                        // Ensure you update the database in a coroutine scope
+                        // Ensure database operations are within a coroutine context
                         launch {
                             try {
-                                val repository = FileRepository(applicationContext)
                                 repository.updateFile(file.apply { isBackedUp = false })
                             } catch (e: Exception) {
                                 println("Error updating file status: ${e.localizedMessage}")
