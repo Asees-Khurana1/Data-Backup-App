@@ -3,28 +3,39 @@ package com.asees.databackupapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.work.*
 import java.util.concurrent.TimeUnit
-
 class MainActivity : ComponentActivity() {
+
+
     private lateinit var viewModel: FileViewModel
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("to check 1st step","1")
+
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
-            .get(FileViewModel::class.java)
+        Log.d("to check 1st step","2")
+
+//        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
+//            .get(FileViewModel::class.java)
 
         scheduleBackupWorker()  // Schedule backup worker on app start
         scheduleRestoreWorker() // Schedule restore worker on app start
+        Log.d("to check 1st step","3")
 
         setContent {
             MainScreen()
@@ -39,27 +50,53 @@ class MainActivity : ComponentActivity() {
                 TopAppBar(title = { Text("Data Backup App") })
             }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Button(
-                    onClick = { startActivity(Intent(this@MainActivity, BackupActivity::class.java)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp)
+                // Add background image
+                Image(
+                    painter = painterResource(id = R.drawable.cloud), // Replace "your_image" with the actual image resource name
+                    contentDescription = null, // Provide content description if necessary
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds // Scale the image to fill the bounds of the Box
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Backup Files")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { startActivity(Intent(this@MainActivity, RestoreActivity::class.java)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    Text("Restore Files")
+                    Button(
+                        onClick = {
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    BackupActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        Text("Backup Files")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    RestoreActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        Text("Restore Files")
+                    }
                 }
             }
         }
