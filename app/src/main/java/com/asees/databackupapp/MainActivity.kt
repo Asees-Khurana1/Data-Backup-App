@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
             contentColor = Color.White // Set the content color of the button (text color)
         )
 
+
         Scaffold(
             topBar = {
                 TopAppBar(
