@@ -10,10 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,11 +25,7 @@ class MainActivity : ComponentActivity() {
     fun MainScreen() {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Data Backup App", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                    backgroundColor = Color.Blue,
-                    contentColor = Color.White
-                )
+                TopAppBar(title = { Text("Data Backup App") })
             }
         ) {
             Column(
@@ -43,27 +36,19 @@ class MainActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = {
-                        startActivity(Intent(this@MainActivity, BackupActivity::class.java))
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                    onClick = { startActivity(Intent(this@MainActivity, BackupActivity::class.java)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text("Go to Backup", color = Color.White, fontSize = 16.sp)
+                    Text("Backup Files")
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = {
-                        startActivity(Intent(this@MainActivity, RestoreActivity::class.java))
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                    onClick = { startActivity(Intent(this@MainActivity, RestoreActivity::class.java)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp)
                 ) {
-                    Text("Go to Restore", color = Color.White, fontSize = 16.sp)
+                    Text("Restore Files")
                 }
             }
         }

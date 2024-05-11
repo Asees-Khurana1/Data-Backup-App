@@ -13,13 +13,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.lifecycle.ViewModelProvider
 
 class RestoreActivity : ComponentActivity() {
+    private lateinit var viewModel: FileViewModel
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val repository = FileRepository(applicationContext)
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
+            .get(FileViewModel::class.java)
+
         setContent {
             RestoreScreen()
         }
@@ -44,9 +49,7 @@ class RestoreActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-                            val restoreRequest = OneTimeWorkRequestBuilder<RestoreWorker>().build()
-                            WorkManager.getInstance(applicationContext).enqueue(restoreRequest)
-                            Toast.makeText(applicationContext, "Restore started", Toast.LENGTH_SHORT).show()
+                            viewModel.restoreFile(FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt", lastAccessed = System.currentTimeMillis()))
                         } else {
                             Toast.makeText(applicationContext, "Insufficient battery or network not available", Toast.LENGTH_LONG).show()
                         }

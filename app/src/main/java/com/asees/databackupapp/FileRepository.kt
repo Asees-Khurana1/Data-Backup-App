@@ -1,20 +1,23 @@
 package com.asees.databackupapp
-//
-//import android.os.Build
-//import androidx.annotation.RequiresApi
-//import java.time.Instant
-//import java.time.temporal.ChronoUnit
-//
-//class FileRepository(private val fileDao: FileDao) {
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    fun getFilesToBackup(): List<FileEntity> {
-//        // Calculate the timestamp for one month ago
-//        val oneMonthAgo = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli()
-//        return fileDao.getFilesNotAccessedInLastMonth(oneMonthAgo)
-//    }
-//
-//
-//    fun updateFileAccess(file: FileEntity) {
-//        fileDao.update(file)
-//    }
-//}
+
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+class FileRepository(val context: Context) {
+    private val database = AppDatabase.getDatabase(context)
+    private val fileDao = database.fileDao()
+
+    suspend fun updateFile(file: FileEntity) = withContext(Dispatchers.IO) {
+        fileDao.updateFile(file)
+    }
+
+    suspend fun getFilesForBackup(threshold: Long): List<FileEntity> {
+        return fileDao.getFilesForBackup(threshold)
+    }
+
+    suspend fun getFilesToRestore(): List<FileEntity> {
+        return fileDao.getFilesToRestore()
+    }
+
+}

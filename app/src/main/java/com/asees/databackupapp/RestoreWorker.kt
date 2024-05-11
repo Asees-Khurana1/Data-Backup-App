@@ -3,23 +3,53 @@ package com.asees.databackupapp
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.*
 
-class RestoreWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+class RestoreWorker(
+    context: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams) {
+
     @RequiresApi(Build.VERSION_CODES.M)
-    override fun doWork(): Result {
-        if (!DeviceStatusUtils.hasEnoughBattery(applicationContext) || !DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-            return Result.retry()
-        }
+    override suspend fun doWork(): Result {
+        val repository = FileRepository(applicationContext)
 
-        val database = AppDatabase.getDatabase(applicationContext)
-        val files = database.fileDao().getFilesForRestore()
-        files.forEach { file ->
-            FirebaseDBHelper.prefetchFile(file)
-            file.isBackedUp = false  // Update based on your app logic
-            database.fileDao().updateFile(file)
+        // Ensure we're in an IO dispatcher for database and network operations
+        return withContext(Dispatchers.IO) {
+            // Check device conditions before proceeding
+            if (!DeviceStatusUtils.hasEnoughBattery(applicationContext) || !DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
+                Result.retry()
+            } else {
+                val filesToRestore = repository.getFilesToRestore()
+
+                filesToRestore.forEach { file ->
+                    try {
+                        // Ensure network and storage interaction is wrapped correctly
+                        FirebaseDBHelper.prefetchFile(
+                            file,
+                            onSuccess = {
+                                // Switch to IO dispatcher to update database
+                                launch(Dispatchers.IO) {
+                                    try {
+                                        repository.updateFile(file.apply { isBackedUp = false })
+                                    } catch (e: Exception) {
+                                        println("Error updating database: ${e.localizedMessage}")
+                                    }
+                                }
+                            },
+                            onError = { exception ->
+                                println("Error restoring file: ${exception.localizedMessage}")
+                            }
+                        )
+                    } catch (e: Exception) {
+                        println("Exception during restoration operation: ${e.localizedMessage}")
+                    }
+                }
+
+                Result.success()
+            }
         }
-        return Result.success()
     }
 }

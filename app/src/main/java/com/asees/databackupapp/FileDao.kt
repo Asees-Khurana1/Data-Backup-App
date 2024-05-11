@@ -1,9 +1,7 @@
 package com.asees.databackupapp
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 
@@ -13,15 +11,11 @@ interface FileDao {
     fun getFilesForBackup(threshold: Long): List<FileEntity>
 
     @Query("SELECT * FROM files WHERE frequentlyUsed = 1 AND isBackedUp = 1")
-    fun getFilesForRestore(): List<FileEntity>
+    fun getFilesToRestore(): List<FileEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert
     fun insertFile(file: FileEntity)
 
     @Update
     fun updateFile(file: FileEntity)
-
-    @Delete
-    fun deleteFile(file: FileEntity)
 }
-

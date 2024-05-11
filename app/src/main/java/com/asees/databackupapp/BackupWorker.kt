@@ -3,25 +3,57 @@ package com.asees.databackupapp
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
 
-class BackupWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+class BackupWorker(
+    context: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams) {
+
     @RequiresApi(Build.VERSION_CODES.M)
-    override fun doWork(): Result {
-        if (!DeviceStatusUtils.hasEnoughBattery(applicationContext) || !DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-            return Result.retry()
-        }
+    override suspend fun doWork(): Result {
+        val repository = FileRepository(applicationContext)
 
-        val database = AppDatabase.getDatabase(applicationContext)
-        val files = database.fileDao().getFilesForBackup(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30))
-        files.forEach { file ->
-            FirebaseDBHelper.backupFile(file)
-            file.isBackedUp = true
-            database.fileDao().updateFile(file)
+        // Ensure we're in an IO dispatcher for database and network operations
+        return withContext(Dispatchers.IO) {
+            // Check device conditions before proceeding
+            if (!DeviceStatusUtils.hasEnoughBattery(applicationContext) || !DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
+                Result.retry()
+            } else {
+                val filesToBackup = repository.getFilesForBackup(System.currentTimeMillis() - THIRTY_DAYS)
+
+                filesToBackup.forEach { file ->
+                    try {
+                        // Ensure network and storage interaction is wrapped correctly
+                        FirebaseDBHelper.backupFile(
+                            file,
+                            onSuccess = {
+                                // Switch to IO dispatcher to update database
+                                launch(Dispatchers.IO) {
+                                    try {
+                                        repository.updateFile(file.apply { isBackedUp = true })
+                                    } catch (e: Exception) {
+                                        println("Error updating database: ${e.localizedMessage}")
+                                    }
+                                }
+                            },
+                            onError = { exception ->
+                                println("Error backing up file: ${exception.localizedMessage}")
+                            }
+                        )
+                    } catch (e: Exception) {
+                        println("Exception during backup operation: ${e.localizedMessage}")
+                    }
+                }
+
+                Result.success()
+            }
         }
-        return Result.success()
+    }
+
+    companion object {
+        private const val THIRTY_DAYS = 2592000000L // 30 days in milliseconds
     }
 }
-
