@@ -2,20 +2,24 @@ package com.asees.databackupapp
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 
 @Dao
 interface FileDao {
     @Query("SELECT * FROM files WHERE lastAccessed <= :threshold AND isBackedUp = 0")
-    fun getFilesForBackup(threshold: Long): List<FileEntity>
+    suspend fun getFilesForBackup(threshold: Long): List<FileEntity>
 
     @Query("SELECT * FROM files WHERE frequentlyUsed = 1 AND isBackedUp = 1")
-    fun getFilesToRestore(): List<FileEntity>
+    suspend fun getFilesToRestore(): List<FileEntity>
 
-    @Insert
-    fun insertFile(file: FileEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFile(file: FileEntity)
 
     @Update
-    fun updateFile(file: FileEntity)
+    suspend fun updateFile(file: FileEntity)
+
+    @Query("UPDATE files SET lastAccessed = :lastAccessed WHERE id = :fileId")
+    suspend fun updateFileAccess(fileId: String, lastAccessed: Long)
 }

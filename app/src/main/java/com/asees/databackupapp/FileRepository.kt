@@ -12,12 +12,15 @@ class FileRepository(val context: Context) {
         fileDao.updateFile(file)
     }
 
-    suspend fun getFilesForBackup(threshold: Long): List<FileEntity> {
-        return fileDao.getFilesForBackup(threshold)
+    suspend fun updateFileAccess(fileId: String, lastAccessed: Long) = withContext(Dispatchers.IO) {
+        fileDao.updateFileAccess(fileId, lastAccessed)
     }
 
-    suspend fun getFilesToRestore(): List<FileEntity> {
-        return fileDao.getFilesToRestore()
+    suspend fun getFilesForBackup(threshold: Long): List<FileEntity> = withContext(Dispatchers.IO) {
+        fileDao.getFilesForBackup(threshold)
     }
 
+    suspend fun getFilesToRestore(): List<FileEntity> = withContext(Dispatchers.IO) {
+        fileDao.getFilesToRestore()
+    }
 }
