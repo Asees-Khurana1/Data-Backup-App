@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
             MainScreen()
         }
         scheduleBackupWorker()
-        scheduleRestoreWorker()
+//        scheduleRestoreWorker()
     }
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -112,20 +112,20 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun scheduleRestoreWorker() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
-            .build()
-
-        val restoreRequest = PeriodicWorkRequestBuilder<RestoreWorker>(1, TimeUnit.DAYS)
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "file_restore_worker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            restoreRequest
-        )
-    }
+//    private fun scheduleRestoreWorker() {
+//        val constraints = Constraints.Builder()
+//            .setRequiredNetworkType(NetworkType.CONNECTED)
+//            .setRequiresBatteryNotLow(true)
+//            .build()
+//
+//        val restoreRequest = PeriodicWorkRequestBuilder<RestoreWorker>(1, TimeUnit.DAYS)
+//            .setConstraints(constraints)
+//            .build()
+//
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//            "file_restore_worker",
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            restoreRequest
+//        )
+//    }
 }
