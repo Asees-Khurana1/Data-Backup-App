@@ -50,8 +50,15 @@ class RestoreActivity : ComponentActivity() {
                         if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
                             val file = FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt")
                             isRestoring = true
-                            restoreFile(file, isRestoring, onProgressUpdate = { progress ->
+                            restoreFile(file, onProgressUpdate = { progress ->
                                 restoreProgress = progress
+                            }, onCompletion = { success, error ->
+                                isRestoring = false
+                                if (success) {
+                                    Toast.makeText(applicationContext, "Restore completed successfully!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(applicationContext, "Restore failed: $error", Toast.LENGTH_SHORT).show()
+                                }
                             })
                         } else {
                             Toast.makeText(applicationContext, "Not enough battery or network is not available", Toast.LENGTH_SHORT).show()
@@ -76,7 +83,7 @@ class RestoreActivity : ComponentActivity() {
         }
     }
 
-    private fun restoreFile(file: FileEntity, isRestoring: Boolean ,onProgressUpdate: (Double) -> Unit) {
+    private fun restoreFile(file: FileEntity, onProgressUpdate: (Double) -> Unit, onCompletion: (Boolean, String?) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 FirebaseDBHelper.prefetchFile(
@@ -93,8 +100,12 @@ class RestoreActivity : ComponentActivity() {
                         launch(Dispatchers.IO) {
                             try {
                                 repository.updateFile(file.apply { isBackedUp = false })
+                                launch(Dispatchers.Main) {
+                                    onCompletion(true, null)
+                                }
                             } catch (e: Exception) {
                                 launch(Dispatchers.Main) {
+                                    onCompletion(false, "Error updating file status: ${e.localizedMessage}")
                                     Toast.makeText(applicationContext, "Error updating file status: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                                 }
                             }
@@ -102,6 +113,7 @@ class RestoreActivity : ComponentActivity() {
                     },
                     onError = { exception ->
                         launch(Dispatchers.Main) {
+                            onCompletion(false, "Restore failed: ${exception.message}")
                             Toast.makeText(applicationContext, "Restore failed: ${exception.message}", Toast.LENGTH_SHORT).show()
                         }
                         println("Restore failed for file: ${file.fileName}, Error: ${exception.message}")
@@ -109,6 +121,7 @@ class RestoreActivity : ComponentActivity() {
                 )
             } catch (e: Exception) {
                 launch(Dispatchers.Main) {
+                    onCompletion(false, "Restore process failed: ${e.localizedMessage}")
                     Toast.makeText(applicationContext, "Restore process failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                 }
             }

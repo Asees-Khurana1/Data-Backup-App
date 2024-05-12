@@ -1,8 +1,11 @@
 package com.asees.databackupapp
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
+import java.io.File
 
 class BackupActivity : ComponentActivity() {
     private val repository by lazy { FileRepository(applicationContext) }
@@ -24,14 +29,19 @@ class BackupActivity : ComponentActivity() {
         setContent {
             BackupScreen()
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestStoragePermissions()
+        } else {
+            startBackup()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun BackupScreen() {
-        var backupProgress by remember { mutableDoubleStateOf(0.0) }
-        var isBackingUp by remember { mutableStateOf(false) } // This is a MutableState<Boolean>
+        var backupProgress by remember { mutableStateOf(0.0) }
+        var isBackingUp by remember { mutableStateOf(false) }
 
         Scaffold(
             topBar = {
@@ -48,19 +58,7 @@ class BackupActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         if (DeviceStatusUtils.hasEnoughBattery(applicationContext) && DeviceStatusUtils.isNetworkAvailable(applicationContext)) {
-                            val file = FileEntity(id = "1", fileName = "test.txt", filePath = "/path/to/test.txt")
-                            isBackingUp = true
-                            // Pass isBackingUp as a MutableState using 'remember { mutableStateOf }'
-                            backupFile(file, onProgressUpdate = { progress ->
-                                backupProgress = progress
-                            }, onCompletion = { success, error ->
-                                if (success) {
-                                    Toast.makeText(applicationContext, "Backup completed successfully!", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(applicationContext, "Backup failed: $error", Toast.LENGTH_SHORT).show()
-                                }
-                                isBackingUp = false
-                            })
+                            startBackup()
                         } else {
                             Toast.makeText(applicationContext, "Not enough battery or network is not available", Toast.LENGTH_SHORT).show()
                         }
@@ -84,6 +82,73 @@ class BackupActivity : ComponentActivity() {
         }
     }
 
+    private fun requestStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), STORAGE_PERMISSION_CODE)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            STORAGE_PERMISSION_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show()
+                    startBackup()
+                } else {
+                    Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun getFilesNotAccessedInLastMonth(): List<FileEntity> {
+        val monthAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
+        val filesList = mutableListOf<FileEntity>()
+        val externalStorage = Environment.getExternalStorageDirectory()
+
+        fun checkFiles(directory: File) {
+            val files = directory.listFiles()
+            if (files != null) {
+                for (file in files) {
+                    if (file.isDirectory) {
+                        checkFiles(file)
+                    } else {
+                        if (file.lastModified() < monthAgo) {
+                            filesList.add(FileEntity(id = file.name, fileName = file.name, filePath = file.path))
+                        }
+                    }
+                }
+            }
+        }
+
+        checkFiles(externalStorage)
+        return filesList
+    }
+
+    private fun startBackup() {
+        CoroutineScope(Dispatchers.Main).launch {
+            val filesToBackup = getFilesNotAccessedInLastMonth()
+            if (filesToBackup.isEmpty()) {
+                Toast.makeText(this@BackupActivity, "No files to back up", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            filesToBackup.forEach { file ->
+                backupFile(file, onProgressUpdate = { progress ->
+                    // Log or update progress UI
+                }, onCompletion = { success, error ->
+                    if (success) {
+                        Toast.makeText(this@BackupActivity, "Backup of ${file.fileName} completed successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@BackupActivity, "Backup of ${file.fileName} failed: $error", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+        }
+    }
+
     private fun backupFile(file: FileEntity, onProgressUpdate: (Double) -> Unit, onCompletion: (Boolean, String?) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -95,31 +160,34 @@ class BackupActivity : ComponentActivity() {
                         }
                     },
                     onSuccess = {
-                        launch(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "Backup completed successfully!", Toast.LENGTH_SHORT).show()
-                        }
-                        launch(Dispatchers.IO) {
-                            try {
+                        try {
+                            launch(Dispatchers.IO){
                                 repository.updateFile(file.apply { isBackedUp = true })
-                            } catch (e: Exception) {
                                 launch(Dispatchers.Main) {
-                                    Toast.makeText(applicationContext, "Error updating file status: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                    onCompletion(true, null)
                                 }
+                            }
+                        } catch (e: Exception) {
+                            launch(Dispatchers.Main) {
+                                onCompletion(false, "Error updating file status: ${e.localizedMessage}")
                             }
                         }
                     },
                     onError = { exception ->
                         launch(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, "Backup failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                            onCompletion(false, "Backup failed: ${exception.message}")
                         }
-                        println("Backup failed for file: ${file.fileName}, Error: ${exception.message}")
                     }
                 )
             } catch (e: Exception) {
                 launch(Dispatchers.Main) {
-                    Toast.makeText(applicationContext, "Backup process failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    onCompletion(false, "Backup process failed: ${e.localizedMessage}")
                 }
             }
         }
+    }
+
+    companion object {
+        private const val STORAGE_PERMISSION_CODE = 1000
     }
 }
