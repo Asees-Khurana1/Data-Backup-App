@@ -24,7 +24,6 @@ DataBackupApp is an Android application designed to backup and restore data effi
   - [FirebaseDBHelper](#firebasedbhelper)
   - [DeviceStatus](#devicestatus)
   - [SensorHandler](#sensorhandler)
-- [License](#license)
 
 ## Features
 
@@ -67,8 +66,10 @@ MainActivity is the primary entry point of the application, setting up the initi
 
 #### Functionality
 
-- Initializes the UI defined in `activity_main.xml`
-- Navigates to `BackupActivity` and `RestoreActivity`
+- **Initializes UI**: Sets the content view using the layout file `activity_main.xml`.
+- **User Interaction**: Sets up buttons and click listeners for user actions.
+- **Navigation**: Provides navigation options to `BackupActivity` and `RestoreActivity` via button clicks.
+- **Lifecycle Management**: Manages the activity lifecycle and ensures proper resource handling during lifecycle events.
 
 ### BackupActivity
 
@@ -78,9 +79,10 @@ Handles the backup operations of the app.
 
 #### Functionality
 
-- Initiates backup processes
-- Interacts with `FileViewModel` to manage file data
-- Displays backup status and progress
+- **UI Setup**: Sets the content view using the layout file `activity_backup.xml`.
+- **Backup Initialization**: Starts the backup process when the user clicks the backup button.
+- **ViewModel Integration**: Interacts with `FileViewModel` to observe backup status and update the UI accordingly.
+- **Progress Display**: Updates the user interface with the progress and status of the backup operation using LiveData observers.
 
 ### RestoreActivity
 
@@ -90,9 +92,10 @@ Manages the restoration of data from backup.
 
 #### Functionality
 
-- Initiates the restore process
-- Fetches data from backup storage
-- Updates UI with restore status and progress
+- **UI Setup**: Sets the content view using the layout file `activity_restore.xml`.
+- **Restore Initialization**: Starts the restore process when the user clicks the restore button.
+- **ViewModel Integration**: Interacts with `FileViewModel` to observe restore status and update the UI accordingly.
+- **Progress Display**: Updates the user interface with the progress and status of the restore operation using LiveData observers.
 
 ### BackupService
 
@@ -102,8 +105,9 @@ A service that handles background backup tasks.
 
 #### Functionality
 
-- Runs backup operations in the background to avoid blocking the main UI
-- Utilizes `BackupWorker` for backup tasks
+- **Background Operations**: Runs backup operations in the background to ensure the main UI remains responsive.
+- **Worker Utilization**: Initiates `BackupWorker` to perform the actual backup tasks.
+- **Service Lifecycle**: Manages the lifecycle of the service to ensure it starts and stops correctly based on user actions and system conditions.
 
 ### BackupWorker
 
@@ -113,9 +117,10 @@ Executes the backup operations.
 
 #### Functionality
 
-- Interacts with `FileRepository` to fetch files to be backed up
-- Uses `FirebaseDBHelper` to store backup data in Firebase
-- Handles errors and retries
+- **File Operations**: Interacts with `FileRepository` to fetch the list of files to be backed up.
+- **Firebase Interaction**: Uses `FirebaseDBHelper` to upload files to Firebase for backup.
+- **Error Handling**: Manages errors during the backup process, including retries if a failure occurs.
+- **WorkManager Integration**: Utilizes WorkManager to schedule and manage the execution of backup tasks in the background.
 
 ### RestoreWorker
 
@@ -125,9 +130,10 @@ Executes the restoration operations.
 
 #### Functionality
 
-- Retrieves backup data from Firebase
-- Uses `FileRepository` to restore files
-- Manages errors and retries
+- **Data Retrieval**: Fetches backup data from Firebase using `FirebaseDBHelper`.
+- **File Restoration**: Uses `FileRepository` to restore files to their original locations on the device.
+- **Error Handling**: Manages errors during the restore process, including retries if a failure occurs.
+- **WorkManager Integration**: Utilizes WorkManager to schedule and manage the execution of restore tasks in the background.
 
 ### FileViewModel
 
@@ -137,8 +143,9 @@ Provides data and handles business logic for file-related operations.
 
 #### Functionality
 
-- Exposes live data for files to the UI
-- Uses `FileRepository` to interact with data sources
+- **LiveData Exposure**: Exposes LiveData for backup and restore statuses to the UI components.
+- **Repository Integration**: Uses `FileRepository` to interact with the data layer and perform backup and restore operations.
+- **Business Logic**: Contains methods to start backup and restore processes and updates LiveData objects to reflect the current status.
 
 ### FileRepository
 
@@ -148,8 +155,9 @@ Manages data operations for files.
 
 #### Functionality
 
-- Provides methods to fetch, save, and update file data
-- Interacts with `FileDao` for database operations
+- **Data Access**: Provides methods to fetch, save, and update file data in the database.
+- **DAO Integration**: Interacts with `FileDao` to perform database operations on file entities.
+- **Backup and Restore Management**: Contains logic to start and manage backup and restore operations, including interacting with Firebase.
 
 ### FileDao
 
@@ -159,7 +167,8 @@ Defines database operations for file entities.
 
 #### Functionality
 
-- Contains methods annotated with Room Database annotations to perform CRUD operations on `FileEntity`
+- **CRUD Operations**: Contains methods annotated with Room Database annotations to perform Create, Read, Update, and Delete operations on `FileEntity`.
+- **Query Execution**: Executes SQL queries to retrieve and manipulate file data stored in the Room database.
 
 ### FileEntity
 
@@ -169,7 +178,8 @@ Represents a file entity in the database.
 
 #### Functionality
 
-- Defines the structure of file data stored in the database
+- **Data Structure**: Defines the structure of file data stored in the database, including fields for file name, file path, and backup status.
+- **Entity Annotations**: Uses Room annotations to specify table name and primary key.
 
 ### Database
 
@@ -179,7 +189,9 @@ Manages the Room Database instance.
 
 #### Functionality
 
-- Provides access to DAOs such as `FileDao`
+- **Database Setup**: Configures and provides a singleton instance of the Room database.
+- **DAO Access**: Provides access to DAOs such as `FileDao` to perform database operations.
+- **Database Configuration**: Specifies the database version and entities included in the database schema.
 
 ### FirebaseDBHelper
 
@@ -189,7 +201,9 @@ Handles Firebase database operations.
 
 #### Functionality
 
-- Provides methods to store and retrieve data from Firebase
+- **File Upload**: Provides methods to upload files to Firebase for backup purposes.
+- **Data Retrieval**: Provides methods to retrieve backup files from Firebase.
+- **Firebase Integration**: Manages the connection and interactions with the Firebase Realtime Database or Firestore.
 
 ### DeviceStatus
 
@@ -199,7 +213,9 @@ Checks and provides the status of the device.
 
 #### Functionality
 
-- Methods to check network connectivity, battery status, etc.
+- **Network Status**: Contains methods to check if the device is connected to the internet.
+- **Battery Status**: Contains methods to check if the device has sufficient battery for backup or restore operations.
+- **Status Reporting**: Provides status reports to other components to make informed decisions about starting or continuing backup and restore operations.
 
 ### SensorHandler
 
@@ -209,9 +225,6 @@ Manages sensor data (e.g., accelerometer, gyroscope).
 
 #### Functionality
 
-- Provides methods to start and stop sensor data collection
-- Retrieves and processes sensor data
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- **Sensor Management**: Provides methods to start and stop sensor data collection.
+- **Data Processing**: Retrieves and processes sensor data, potentially for use in determining if backup operations should pause (e.g., if the device is moving).
+- **Sensor Integration**: Manages connections to device sensors and handles data updates.
