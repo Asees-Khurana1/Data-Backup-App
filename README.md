@@ -18,8 +18,7 @@ DataBackupApp is an Android application designed to backup and restore data effi
   - [FileRepository](#filerepository)
   - [FirebaseDBHelper](#firebasedbhelper)
   - [DeviceStatus](#devicestatus)
-  - [SensorHandler](#sensorhandler)
-
+ 
 ## Features
 
 - Backup data to Firebase
@@ -148,15 +147,3 @@ Checks and provides the status of the device.
 - **Network Status**: Contains methods to check if the device is connected to the internet.
 - **Battery Status**: Contains methods to check if the device has sufficient battery for backup or restore operations.
 - **Status Reporting**: Provides status reports to other components to make informed decisions about starting or continuing backup and restore operations.
-
-### SensorHandler
-
-#### Purpose
-
-Manages sensor data (e.g., accelerometer, gyroscope).
-
-#### Functionality
-
-- **Sensor Management**: Provides methods to start and stop sensor data collection.
-- **Data Processing**: Retrieves and processes sensor data, potentially for use in determining if backup operations should pause (e.g., if the device is moving).
-- **Sensor Integration**: Manages connections to device sensors and handles data updates.
