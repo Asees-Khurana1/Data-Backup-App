@@ -1,6 +1,6 @@
 # DataBackupApp
 
-DataBackupApp is an Android application designed to backup and restore data efficiently. It leverages Jetpack Compose for the UI, uses firebase for the Database Operations, and adheres to solid principles and best practices from the Android Developers website.
+DataBackupApp is an Android application designed to backup and restore data efficiently. It leverages Jetpack Compose for the UI and follows SOLID principles and best practices from the Android Developers website.
 
 ## Table of Contents
 
@@ -15,12 +15,7 @@ DataBackupApp is an Android application designed to backup and restore data effi
   - [RestoreActivity](#restoreactivity)
   - [BackupService](#backupservice)
   - [BackupWorker](#backupworker)
-  - [RestoreWorker](#restoreworker)
-  - [FileViewModel](#fileviewmodel)
   - [FileRepository](#filerepository)
-  - [FileDao](#filedao)
-  - [FileEntity](#fileentity)
-  - [Database](#database)
   - [FirebaseDBHelper](#firebasedbhelper)
   - [DeviceStatus](#devicestatus)
   - [SensorHandler](#sensorhandler)
@@ -29,8 +24,7 @@ DataBackupApp is an Android application designed to backup and restore data effi
 
 - Backup data to Firebase
 - Restore data from Firebase
-- Background backup and restore operations
-- File management with Room database
+- Background backup operations
 - Sensor data management
 - Device status checks
 
@@ -54,7 +48,7 @@ DataBackupApp is an Android application designed to backup and restore data effi
 
 ## Architecture
 
-The application follows the MVVM (Model-View-ViewModel) architecture pattern to ensure a clean separation of concerns and promote testability. It also uses Jetpack components such as LiveData, Room, and WorkManager.
+The application is designed following SOLID principles and best practices from the Android Developers website, ensuring a clean and maintainable codebase.
 
 ## Components
 
@@ -81,7 +75,6 @@ Handles the backup operations of the app.
 
 - **UI Setup**: Sets the content view using the layout file `activity_backup.xml`.
 - **Backup Initialization**: Starts the backup process when the user clicks the backup button.
-- **ViewModel Integration**: Interacts with `FileViewModel` to observe backup status and update the UI accordingly.
 - **Progress Display**: Updates the user interface with the progress and status of the backup operation using LiveData observers.
 
 ### RestoreActivity
@@ -94,7 +87,6 @@ Manages the restoration of data from backup.
 
 - **UI Setup**: Sets the content view using the layout file `activity_restore.xml`.
 - **Restore Initialization**: Starts the restore process when the user clicks the restore button.
-- **ViewModel Integration**: Interacts with `FileViewModel` to observe restore status and update the UI accordingly.
 - **Progress Display**: Updates the user interface with the progress and status of the restore operation using LiveData observers.
 
 ### BackupService
@@ -122,31 +114,6 @@ Executes the backup operations.
 - **Error Handling**: Manages errors during the backup process, including retries if a failure occurs.
 - **WorkManager Integration**: Utilizes WorkManager to schedule and manage the execution of backup tasks in the background.
 
-### RestoreWorker
-
-#### Purpose
-
-Executes the restoration operations.
-
-#### Functionality
-
-- **Data Retrieval**: Fetches backup data from Firebase using `FirebaseDBHelper`.
-- **File Restoration**: Uses `FileRepository` to restore files to their original locations on the device.
-- **Error Handling**: Manages errors during the restore process, including retries if a failure occurs.
-- **WorkManager Integration**: Utilizes WorkManager to schedule and manage the execution of restore tasks in the background.
-
-### FileViewModel
-
-#### Purpose
-
-Provides data and handles business logic for file-related operations.
-
-#### Functionality
-
-- **LiveData Exposure**: Exposes LiveData for backup and restore statuses to the UI components.
-- **Repository Integration**: Uses `FileRepository` to interact with the data layer and perform backup and restore operations.
-- **Business Logic**: Contains methods to start backup and restore processes and updates LiveData objects to reflect the current status.
-
 ### FileRepository
 
 #### Purpose
@@ -155,43 +122,8 @@ Manages data operations for files.
 
 #### Functionality
 
-- **Data Access**: Provides methods to fetch, save, and update file data in the database.
-- **DAO Integration**: Interacts with `FileDao` to perform database operations on file entities.
+- **Data Access**: Provides methods to fetch, save, and update file data.
 - **Backup and Restore Management**: Contains logic to start and manage backup and restore operations, including interacting with Firebase.
-
-### FileDao
-
-#### Purpose
-
-Defines database operations for file entities.
-
-#### Functionality
-
-- **CRUD Operations**: Contains methods annotated with Room Database annotations to perform Create, Read, Update, and Delete operations on `FileEntity`.
-- **Query Execution**: Executes SQL queries to retrieve and manipulate file data stored in the Room database.
-
-### FileEntity
-
-#### Purpose
-
-Represents a file entity in the database.
-
-#### Functionality
-
-- **Data Structure**: Defines the structure of file data stored in the database, including fields for file name, file path, and backup status.
-- **Entity Annotations**: Uses Room annotations to specify table name and primary key.
-
-### Database
-
-#### Purpose
-
-Manages the Room Database instance.
-
-#### Functionality
-
-- **Database Setup**: Configures and provides a singleton instance of the Room database.
-- **DAO Access**: Provides access to DAOs such as `FileDao` to perform database operations.
-- **Database Configuration**: Specifies the database version and entities included in the database schema.
 
 ### FirebaseDBHelper
 
