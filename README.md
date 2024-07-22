@@ -18,13 +18,12 @@ DataBackupApp is an Android application designed to backup and restore data effi
   - [FileRepository](#filerepository)
   - [FirebaseDBHelper](#firebasedbhelper)
   - [DeviceStatus](#devicestatus)
- 
+
 ## Features
 
 - Backup data to Firebase
 - Restore data from Firebase
 - Background backup operations
-- Sensor data management
 - Device status checks
 
 ## Getting Started
@@ -74,7 +73,7 @@ Handles the backup operations of the app.
 
 - **UI Setup**: Sets the content view using the layout file `activity_backup.xml`.
 - **Backup Initialization**: Starts the backup process when the user clicks the backup button.
-- **Progress Display**: Updates the user interface with the progress and status of the backup operation using LiveData observers.
+- **Progress Display**: Updates the user interface with the progress and status of the backup operation.
 
 ### RestoreActivity
 
@@ -86,7 +85,7 @@ Manages the restoration of data from backup.
 
 - **UI Setup**: Sets the content view using the layout file `activity_restore.xml`.
 - **Restore Initialization**: Starts the restore process when the user clicks the restore button.
-- **Progress Display**: Updates the user interface with the progress and status of the restore operation using LiveData observers.
+- **Progress Display**: Updates the user interface with the progress and status of the restore operation.
 
 ### BackupService
 
