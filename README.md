@@ -1,6 +1,6 @@
 # DataBackupApp
 
-DataBackupApp is an Android application designed to backup and restore data efficiently. It leverages Jetpack Compose for the UI, follows the MVVM architecture, and adheres to SOLID principles and best practices from the Android Developers website.
+DataBackupApp is an Android application designed to backup and restore data efficiently. It leverages Jetpack Compose for the UI, uses firebase for the Database Operations, and adheres to solid principles and best practices from the Android Developers website.
 
 ## Table of Contents
 
